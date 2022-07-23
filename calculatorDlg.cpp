@@ -1,12 +1,23 @@
 ﻿
 // calculatorDlg.cpp: 实现文件
 //
-
 #include "pch.h"
 #include "framework.h"
 #include "calculator.h"
 #include "calculatorDlg.h"
 #include "afxdialogex.h"
+#include "iostream"
+#include "string"
+#include "stdlib.h"
+#include "stdio.h"
+#include "string.h"
+using namespace std;
+const char oper[7] = { '+', '-', '*', '/', '(', ')', '=' };
+#define OK 1
+#define ERROR 0
+#define OVERFLOW -2
+typedef char SElemType;
+typedef int Status;
 #define pi 3.1415926535898//定义
 #define std_angle (pi/180)
 
@@ -92,7 +103,6 @@ BEGIN_MESSAGE_MAP(CcalculatorDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON4, &CcalculatorDlg::OnBnClickedButton4)
 	ON_BN_CLICKED(IDC_BUTTON9, &CcalculatorDlg::OnBnClickedButton9)
-	ON_BN_CLICKED(IDC_BUTTON17, &CcalculatorDlg::OnBnClickedButton17)
 	ON_BN_CLICKED(IDC_BUTTON21, &CcalculatorDlg::OnBnClickedButton21)
 	ON_BN_CLICKED(IDC_BUTTON25, &CcalculatorDlg::OnBnClickedButton25)
 	ON_BN_CLICKED(IDC_BUTTON37, &CcalculatorDlg::OnBnClickedButton37)
@@ -115,13 +125,11 @@ BEGIN_MESSAGE_MAP(CcalculatorDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON23, &CcalculatorDlg::OnBnClickedButton23)
 	ON_BN_CLICKED(IDC_BUTTON36, &CcalculatorDlg::OnBnClickedButton36)
 	ON_BN_CLICKED(IDC_BUTTON40, &CcalculatorDlg::OnBnClickedButton40)
-	ON_BN_CLICKED(IDC_BUTTON38, &CcalculatorDlg::OnBnClickedButton38)
 	ON_BN_CLICKED(IDC_BUTTON39, &CcalculatorDlg::OnBnClickedButton39)
 	ON_BN_CLICKED(IDC_BUTTON34, &CcalculatorDlg::OnBnClickedButton34)
 	ON_BN_CLICKED(IDC_BUTTON28, &CcalculatorDlg::OnBnClickedButton28)
 	ON_BN_CLICKED(IDC_BUTTON31, &CcalculatorDlg::OnBnClickedButton31)
 	ON_BN_CLICKED(IDC_BUTTON15, &CcalculatorDlg::OnBnClickedButton15)
-	ON_BN_CLICKED(IDC_BUTTON29, &CcalculatorDlg::OnBnClickedButton29)
 	ON_BN_CLICKED(IDC_BUTTON32, &CcalculatorDlg::OnBnClickedButton32)
 	ON_BN_CLICKED(IDC_BUTTON14, &CcalculatorDlg::OnBnClickedButton14)
 	ON_BN_CLICKED(IDC_BUTTON30, &CcalculatorDlg::OnBnClickedButton30)
@@ -130,6 +138,7 @@ BEGIN_MESSAGE_MAP(CcalculatorDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON13, &CcalculatorDlg::OnBnClickedButton13)
 	ON_BN_CLICKED(IDC_BUTTON18, &CcalculatorDlg::OnBnClickedButton18)
 	ON_BN_CLICKED(IDC_BUTTON35, &CcalculatorDlg::OnBnClickedButton35)
+	ON_BN_CLICKED(IDC_BUTTON41, &CcalculatorDlg::OnBnClickedButton41)
 END_MESSAGE_MAP()
 
 
@@ -217,6 +226,130 @@ HCURSOR CcalculatorDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
+//后缀
+ typedef struct SNode
+{
+	double data;
+	struct SNode* next;
+} SNode, * LinkStack;
+
+double h;
+
+Status InitStack(LinkStack& S)
+{
+	S = NULL;
+	return OK;
+}
+bool StackEmpty(LinkStack S)
+{
+	if (!S)
+		return true;
+	return false;
+}
+Status Push(LinkStack& S, SElemType e)
+{
+	SNode* p = new SNode;
+	if (!p)
+	{
+		return OVERFLOW;
+	}
+	p->data = e;
+	p->next = S;
+	S = p;
+	return OK;
+}
+
+
+Status Pushint(LinkStack& S, double e)
+{
+	SNode* p = new SNode;
+	if (!p)
+	{
+		return OVERFLOW;
+	}
+	p->data = e;
+	p->next = S;
+	S = p;
+	return OK;
+}
+
+
+Status Pop(LinkStack& S, SElemType& e)
+{
+	SNode* p;
+	if (!S)
+		return ERROR;
+	e = S->data;
+	p = S;
+	S = S->next;
+	delete p;
+	return OK;
+}
+Status Popint(LinkStack& S, double& e)
+{
+	SNode* p;
+	if (!S)
+		return ERROR;
+	e = S->data;
+	p = S;
+	S = S->next;
+	delete p;
+	return OK;
+}
+
+
+double GetTop(LinkStack& S)
+{
+	if (!S)
+		return ERROR;
+
+
+	return S->data;
+}
+bool In(char ch)  //判断ch是否为运算符
+{
+	for (int i = 0; i < 7; i++)
+	{
+		if (ch == oper[i])
+		{
+			return true;
+		}
+	}
+	return false;
+}
+char Precede(char theta1, char theta2)  //判断运算符优先级
+{
+	if ((theta1 == '(' && theta2 == ')') || (theta1 == '=' && theta2 == '='))
+	{
+		return '=';
+	}
+	else if (theta1 == '(' || theta1 == '=' || theta2 == '(' || (theta1
+		== '+' || theta1 == '-') && (theta2 == '*' || theta2 == '/'))
+	{
+		return '<';
+	}
+	else
+		return '>';
+}
+
+double Operate(double first, char theta, double second)  //计算两数运算结果
+{
+	switch (theta)
+	{
+	case '+':
+		return (first)+(second);
+	case '-':
+		return (first)-(second);
+	case '*':
+		return (first) * (second);
+	case '/':
+		double m = (first) * 1.0 / (second);
+		return m;
+	}
+	return 0;
+}
+
+
 void CcalculatorDlg::SaveFirstValue()//自拟1
 {
 	UpdateData(TRUE);
@@ -225,93 +358,94 @@ void CcalculatorDlg::SaveFirstValue()//自拟1
 	mStr = L"";
 	UpdateData(FALSE);
 }
-void CcalculatorDlg::Calculator()//自拟2,点击等于时调用
+void CcalculatorDlg::Calculator()//自拟2,点击等于时调用 
 {
 	UpdateData(TRUE);
-	mNum2 = _wtof(mStr);//因为此时符号没有显示，故输入栏只有第二个数
-	double result = 0.0f;//定义结果值
-	switch (mFlag)
+	std::string str = CT2A(mStr.GetString());
+	if (str[0] == '=')
 	{
-	case FLAG_JIA://加  
-		result = mNum1 + mNum2;
-		mTempStr = mTempStr + _T("+") + mStr + _T("=");
-		break;
-	case FLAG_JIAN:						//减 
-		result = mNum1 - mNum2;
-		mTempStr = mTempStr + _T("-") + mStr + _T("=");
-		break;
-	case FLAG_CHENG:					//乘  
-		result = mNum1 * mNum2;
-		mTempStr = mTempStr + _T("x") + mStr + _T("=");
-		break;
-	case FLAG_CHU:						//除  
-		if (mNum2 == 0.0f)
+		mStr10 = mStr9;
+		mStr9 = mStr8;
+		mStr8 = mStr7;
+		mStr7 = mStr6;
+		mStr6 = mStr5;
+		mStr5 = mStr4;
+		mStr4 = mStr3;
+		mStr3 = mStr2;
+		mStr2 = mStr1;
+		mStr1 = "表达式不能为空！";
+		UpdateData(FALSE);//递归更新历史记录
+
+	}
+	for (int j = 0; j < str.length()-1; j++) {
+		if (str[j] == '/' && str[j + 1] == '0')
 		{
-			result = mNum1;
-			mTempStr = _T("---除数不能为0！！！---");//防止除数为0
+			mStr10 = mStr9;
+			mStr9 = mStr8;
+			mStr8 = mStr7;
+			mStr7 = mStr6;
+			mStr6 = mStr5;
+			mStr5 = mStr4;
+			mStr4 = mStr3;
+			mStr3 = mStr2;
+			mStr2 = mStr1;
+			mStr1 = "除数不能为0！";
+			UpdateData(FALSE);//递归更新历史记录
+			break;
+			
 		}
+	}
+	int i = 0;
+	LinkStack OPTR, OPND;//创造栈
+	char ch, theta, x, top;
+	double a, b;
+	string c;
+	InitStack(OPND); //初始化OPND栈
+	InitStack(OPTR); //初始化OPTR栈
+	Push(OPTR, '='); //将表达式起始符“=”压入OPTR栈
+	ch = str[i];
+	while (ch != '=' || (GetTop(OPTR) != '=')) //表达式没有扫描完毕或OPTR的栈顶元素不为“#”
+	{
+		if (!In(ch))
+		{
+			//  Push(OPND, ch);
+			c += ch;
+			i++;
+			ch = str[i];
+		} //ch不是运算符则进OPND栈
 		else
 		{
-			result = mNum1 / mNum2;
-			mTempStr = mTempStr + _T("/") + mStr + _T("=");
+			if (!c.empty())
+			{
+				double y = atof(c.c_str());
+				Pushint(OPND, y);
+				c.erase();
+			}
+
+
+			switch (Precede(GetTop(OPTR), ch)) //比较OPTR的栈顶元素和ch的优先级
+			{
+			case '<':
+				Push(OPTR, ch);
+				i++;
+				ch = str[i];//当前字符ch压入OPTR栈，读入下一字符ch
+				break;
+			case '>':
+				Pop(OPTR, theta); //弹出OPTR栈顶的运算符
+				Popint(OPND, b);
+				Popint(OPND, a); //弹出OPND栈顶的两个运算数
+				Pushint(OPND, Operate(a, theta, b)); //将运算结果压入OPND栈
+				break;
+			case '=': //OPTR的栈顶元素是“(”且ch是“)”
+				Pop(OPTR, x);
+				i++;
+				ch = str[i];//弹出OPTR栈顶的“(”，读入下一字符ch
+				break;
+			}//switch
 		}
-		break;
-	case FLAG_NFANG:					//n方
-		result = pow(mNum1, mNum2);
-		mTempStr = mTempStr + _T("^") + mStr + _T("=");
-		break;
-	case FLAG_KAINFANG:					//开n方
-		result = pow(mNum1, 1.0 / mNum2);
-		mTempStr = mStr + _T("√") + mTempStr + _T("=");
-		break;
-	case FLAG_MOD:						//mod
-		result = (int)mNum1 % (int)mNum2;
-		mTempStr = mTempStr + _T("%") + mStr + _T("=");
-		break;
-	case FLAG_LOGNX:					//lognx
-		result = log(mNum2) / log(mNum1);
-		mTempStr = _T("log") + mTempStr + _T("(") + mStr + _T(")=");
-		break;
-	case FLAG_PINGFANG:					//平方 
-		result = mNum2 * mNum2;
-		mTempStr = mTempStr + _T("^2=");
-		break;
-	case FLAG_KAIFANG:	//开方  
-		result = sqrt(mNum2);
-		mTempStr = _T("2√") + mTempStr + _T("=");
-		break;
-	case FLAG_LIFANG:					//立方 
-		result = mNum2 * mNum2 * mNum2;
-		mTempStr = mTempStr + _T("^3=");
-		break;
-	case FLAG_KAILIFANG:					//开立方  
-		result = pow(mNum2, 1.0 / 3);
-		mTempStr = _T("3√") + mTempStr + _T("=");
-		break;
-	case FLAG_RECIPROCAL:           //倒数函数
-		if (mNum1== 0.0f)
-		{
-			result = mNum1;
-			mTempStr = _T("---除数不能为0！！！---");//防止除数为0
-		}
-		else {
-			result = 1 / mNum1;
-			mTempStr = _T("1/") + mTempStr + _T("=");
-		}
-		break;
-	default:
-		break;
-	}
-	//如果浮点数是个整数,就显示为整数
-	if (result - int(result) <= 1e-5)
-	{
-		mStr.Format(L"%d", (int)result);//Fomat使数据转化为字符串
-	}
-	else
-	{
-		mStr.Format(L"%f", result);
-	}
-	mTempStr += mStr;
+	} //while
+	h = GetTop(OPND); //OPND栈顶元素即为表达式求值结果 
+	mStr.Format(L"%s%.2lf", mStr,h);
 	mStr10 = mStr9;
 	mStr9 = mStr8;
 	mStr8 = mStr7;
@@ -321,10 +455,9 @@ void CcalculatorDlg::Calculator()//自拟2,点击等于时调用
 	mStr4 = mStr3;
 	mStr3 = mStr2;
 	mStr2 = mStr1;
-	mStr1 = mTempStr;
+	mStr1 = mStr;
 	UpdateData(FALSE);//递归更新历史记录
-
-	mNum1 = result;//记录结果方便连续运算
+	mNum1 = 0.0f;//记录结果方便连续运算
 	mNum2 = 0.0f;
 
 }
@@ -503,12 +636,6 @@ void CcalculatorDlg::OnBnClickedButton9()
 }
 
 
-void CcalculatorDlg::OnBnClickedButton17()
-{
-	// TODO: 在此添加控件通知处理程序代码
-	SaveFirstValue();
-	mFlag = FLAG_NFANG;
-}
 
 
 
@@ -542,7 +669,7 @@ void CcalculatorDlg::OnBnClickedButton21()//二转十
 
 	mNum1 = f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_BTD;
+	
 }
 
 
@@ -574,7 +701,7 @@ void CcalculatorDlg::OnBnClickedButton25()
 
 	mNum1 = f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_HTD;
+	
 }
 
 
@@ -606,7 +733,7 @@ void CcalculatorDlg::OnBnClickedButton37()
 
 	mNum1 = f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_KAILIFANG;
+	
 }
 
 
@@ -696,8 +823,9 @@ void CcalculatorDlg::OnBnClickedButton11()
 void CcalculatorDlg::OnBnClickedButton16()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	SaveFirstValue();
-	mFlag = FLAG_CHU;
+	UpdateData(TRUE);
+	mStr = mStr + '/';
+	UpdateData(FALSE);
 }
 
 
@@ -712,25 +840,15 @@ void CcalculatorDlg::OnBnClickedButton19()
 }
 
 
-void CcalculatorDlg::OnBnClickedButton20()//删除所有
+void CcalculatorDlg::OnBnClickedButton20()//删除
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData(TRUE);
 	mStr = L"";
-	mStr1 = L"";
-	mStr2 = L"";
-	mStr3 = L"";
-	mStr4 = L"";
-	mStr5 = L"";
-	mStr6 = L"";
-	mStr7 = L"";
-	mStr8 = L"";
-	mStr9 = L"";
-	mStr10 = L"";
 	mNum1 = 0.0f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_JIA;
 	UpdateData(FALSE);
+	
 }
 
 
@@ -738,11 +856,9 @@ void CcalculatorDlg::OnBnClickedButton27()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData(TRUE);
-	mStr = L"";
-	mNum1 = 0.0f;
-	mNum2 = 0.0f;
-	mFlag = FLAG_JIA;//使结果值为0方便下一步计算
+	mStr = mStr + ')';
 	UpdateData(FALSE);
+	
 }
 
 
@@ -776,7 +892,7 @@ void CcalculatorDlg::OnBnClickedButton22()
 
 	mNum1 = f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_OTD;
+	
 }
 
 
@@ -801,7 +917,7 @@ void CcalculatorDlg::OnBnClickedButton26()
 	UpdateData(FALSE);
 
 	mNum2 = 0.0f;
-	mFlag = FLAG_H;
+	
 }
 
 
@@ -834,7 +950,7 @@ void CcalculatorDlg::OnBnClickedButton24()
 
 	mNum1 = f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_O;
+	
 }
 
 
@@ -867,7 +983,7 @@ void CcalculatorDlg::OnBnClickedButton23()//十转二
 
 	mNum1 = f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_B;
+	
 }
 
 
@@ -904,7 +1020,7 @@ void CcalculatorDlg::OnBnClickedButton36()
 
 	mNum1 = 0.0f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_KAIFANG;
+	
 	
 }
 
@@ -940,16 +1056,9 @@ void CcalculatorDlg::OnBnClickedButton40()
 
 	mNum1 = f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_LIFANG;
+	
 }
 
-
-void CcalculatorDlg::OnBnClickedButton38()
-{
-	// TODO: 在此添加控件通知处理程序代码
-	SaveFirstValue();
-	mFlag = FLAG_KAINFANG;
-}
 
 
 void CcalculatorDlg::OnBnClickedButton39()
@@ -983,7 +1092,7 @@ void CcalculatorDlg::OnBnClickedButton39()
 
 	mNum1 = f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_PINGFANG;
+	
 }
 
 
@@ -1020,7 +1129,7 @@ void CcalculatorDlg::OnBnClickedButton34()
 
 	mNum1 = f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_JIECHENG;
+	
 
 }
 
@@ -1053,7 +1162,6 @@ void CcalculatorDlg::OnBnClickedButton28()
 
 	mNum1 = f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_LNX;
 }
 
 
@@ -1085,24 +1193,19 @@ void CcalculatorDlg::OnBnClickedButton31()
 
 	mNum1 = f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_SINX;
+	
 }
 
 
 void CcalculatorDlg::OnBnClickedButton15()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	SaveFirstValue();
-	mFlag = FLAG_CHENG;
+	UpdateData(TRUE);
+	mStr = mStr + '*';
+	UpdateData(FALSE);
 }
 
 
-void CcalculatorDlg::OnBnClickedButton29()
-{
-	// TODO: 在此添加控件通知处理程序代码
-	SaveFirstValue();
-	mFlag = FLAG_LOGNX;
-}
 
 
 void CcalculatorDlg::OnBnClickedButton32()
@@ -1133,15 +1236,16 @@ void CcalculatorDlg::OnBnClickedButton32()
 
 	mNum1 = f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_COSX;
+	
 }
 
 
 void CcalculatorDlg::OnBnClickedButton14()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	SaveFirstValue();
-	mFlag = FLAG_JIAN;
+	UpdateData(TRUE);
+	mStr = mStr + '-';
+	UpdateData(FALSE);
 }
 
 
@@ -1173,7 +1277,7 @@ void CcalculatorDlg::OnBnClickedButton30()
 
 	mNum1 = f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_EX;
+	
 }
 
 
@@ -1205,13 +1309,16 @@ void CcalculatorDlg::OnBnClickedButton33()
 
 	mNum1 = f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_TANX;
+	
 }
 
 
 void CcalculatorDlg::OnBnClickedButton12()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+	mStr = mStr + '=';
+	UpdateData(FALSE);
 	Calculator();
 }
 
@@ -1219,16 +1326,18 @@ void CcalculatorDlg::OnBnClickedButton12()
 void CcalculatorDlg::OnBnClickedButton13()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	SaveFirstValue();
-	mFlag = FLAG_JIA;
+	UpdateData(TRUE);
+	mStr = mStr + '+';
+	UpdateData(FALSE);
 }
 
 
 void CcalculatorDlg::OnBnClickedButton18()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	SaveFirstValue();
-	mFlag = FLAG_RECIPROCAL;
+	UpdateData(TRUE);
+	mStr = mStr + '(';
+	UpdateData(FALSE);
 }
 
 
@@ -1262,5 +1371,27 @@ void CcalculatorDlg::OnBnClickedButton35()
 
 	mNum1 = f;
 	mNum2 = 0.0f;
-	mFlag = FLAG_COTX;
+	
+}
+
+
+void CcalculatorDlg::OnBnClickedButton41()//删除所有
+{
+	// TODO: 在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+	mStr = L"";
+	mStr1 = L"";
+	mStr2 = L"";
+	mStr3 = L"";
+	mStr4 = L"";
+	mStr5 = L"";
+	mStr6 = L"";
+	mStr7 = L"";
+	mStr8 = L"";
+	mStr9 = L"";
+	mStr10 = L"";
+	mNum1 = 0.0f;
+	mNum2 = 0.0f;
+	
+	UpdateData(FALSE);
 }

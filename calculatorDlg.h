@@ -4,34 +4,7 @@
 
 #pragma once
 
-enum Calculator_Flag {
-	FLAG_JIA,
-	FLAG_JIAN,
-	FLAG_CHENG,
-	FLAG_CHU,
-	FLAG_PINGFANG,
-	FLAG_KAIFANG,
-	FLAG_LIFANG,
-	FLAG_KAILIFANG,
-	FLAG_NFANG,
-	FLAG_KAINFANG,
-	FLAG_HTD,
-	FLAG_OTD,
-	FLAG_BTD,
-	FLAG_H,
-	FLAG_O,
-	FLAG_B,
-	FLAG_JIECHENG,
-	FLAG_MOD,
-	FLAG_LNX,
-	FLAG_LOGNX,
-	FLAG_EX,
-	FLAG_SINX,
-	FLAG_COSX,
-	FLAG_TANX,
-	FLAG_RECIPROCAL,
-	FLAG_COTX,
-};
+
 
 // CcalculatorDlg 对话框
 class CcalculatorDlg : public CDialogEx
@@ -41,7 +14,6 @@ public:
 	CcalculatorDlg(CWnd* pParent = nullptr);	// 标准构造函数
 	void SaveFirstValue();		//保存第一个输入值
 	void Calculator();			//计算
-
 // 对话框数据
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_CALCULATOR_DIALOG };
@@ -66,7 +38,6 @@ protected:
 public:
 	afx_msg void OnBnClickedButton4();
 	afx_msg void OnBnClickedButton9();
-	afx_msg void OnBnClickedButton17();
 	afx_msg void OnBnClickedButton21();
 	afx_msg void OnBnClickedButton25();
 	afx_msg void OnBnClickedButton37();
@@ -84,7 +55,6 @@ public:
 	CString mTempStr;
 	double mNum1;				//输入的2个值
 	double mNum2;
-	Calculator_Flag mFlag;		//运算符号
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedButton2();
 	afx_msg void OnBnClickedButton3();
@@ -104,13 +74,11 @@ public:
 	afx_msg void OnBnClickedButton23();
 	afx_msg void OnBnClickedButton36();
 	afx_msg void OnBnClickedButton40();
-	afx_msg void OnBnClickedButton38();
 	afx_msg void OnBnClickedButton39();
 	afx_msg void OnBnClickedButton34();
 	afx_msg void OnBnClickedButton28();
 	afx_msg void OnBnClickedButton31();
 	afx_msg void OnBnClickedButton15();
-	afx_msg void OnBnClickedButton29();
 	afx_msg void OnBnClickedButton32();
 	afx_msg void OnBnClickedButton14();
 	afx_msg void OnBnClickedButton30();
@@ -119,4 +87,5 @@ public:
 	afx_msg void OnBnClickedButton13();
 	afx_msg void OnBnClickedButton18();
 	afx_msg void OnBnClickedButton35();
+	afx_msg void OnBnClickedButton41();
 };
